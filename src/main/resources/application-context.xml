@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xsi:schemaLocation="
+	       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	       http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-2.5.xsd
+	       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:environment.properties</value>
+            </list>
+        </property>
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+    </bean>
+
+	<bean id="oracleDataSource" class="oracle.jdbc.pool.OracleDataSource">
+		<property name="URL">
+			<value>jdbc:oracle:thin:@${database.server}:${database.port}:${database.name}</value>
+		</property>
+		<property name="user" value="${database.user}" />
+		<property name="password" value="${database.password}" />
+
+		<!-- Pool properties -->
+		<property name="connectionCachingEnabled" value="true" />
+		<property name="connectionCacheName" value="db_connection_pool" />
+		<property name="connectionCacheProperties">
+			<props>
+				<prop key="MinLimit">${jdbc.connection.pool.minLimit}</prop>
+				<prop key="MaxLimit">${jdbc.connection.pool.maxLimit}</prop>
+				<prop key="InitialLimit">${jdbc.connection.pool.initialLimit}</prop>
+				<prop key="InactivityTimeout">${jdbc.connection.pool.inactivity.timeout}</prop>
+				<prop key="ConnectionWaitTimeout">${jdbc.connection.pool.connectionWait.timeout}</prop>
+			</props>
+		</property>
+	</bean>
+
+
+	<bean id="aqConnectionFactoryCreator" class="com.saptarshibasu.poc.oracleaqclient.jms.OracleAqConnectionFactoryCreator">
+		<constructor-arg ref="oracleDataSource"/>
+	</bean>
+
+	<bean id="aqConnectionFactory" factory-bean="aqConnectionFactoryCreator" factory-method="getConnectionFactory"/>
+
+	<bean id="messageProcessor" class="com.saptarshibasu.poc.oracleaqclient.jms.MessageProcessor"/>
+	
+	<bean id="messagingMBean" class="com.saptarshibasu.poc.oracleaqclient.monitoring.MessagingMBean">
+		<constructor-arg ref="messageProcessor"/>
+	</bean>
+
+	<bean id="serverInitializer" class="com.saptarshibasu.poc.oracleaqclient.initializer.ServerInitializer" init-method="init">
+		<constructor-arg>
+	        <list>
+	            <ref bean="monitoringInitializer" />
+	            <ref bean="jmsClient" />
+	        </list>
+    	</constructor-arg>
+	</bean>
+	
+	<bean id="monitoringInitializer" class="com.saptarshibasu.poc.oracleaqclient.initializer.MonitoringInitializer">
+		<constructor-arg>
+	        <list>
+	            <ref bean="messagingMBean" />
+	        </list>
+    	</constructor-arg>
+	</bean>
+	<bean id="jmsClient" class="com.saptarshibasu.poc.oracleaqclient.jms.JMSClient">
+		<constructor-arg ref="aqConnectionFactory"/>
+		<constructor-arg ref="messageProcessor"/>
+		<constructor-arg value="${jms.client.destination}"/>
+		<constructor-arg value="${jms.client.subscriptionName}"/>
+		<constructor-arg value="${jms.client.concurrency}"/>
+	</bean>
+</beans>

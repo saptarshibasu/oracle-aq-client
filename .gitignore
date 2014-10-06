@@ -1,0 +1,7 @@
+/target
+
+/.classpath
+/.project
+/.settings/
+/jms_client*
+/perf4j*
