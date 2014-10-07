@@ -1,6 +1,6 @@
 package com.saptarshibasu.poc.oracleaqclient.initializer;
 
-import com.saptashibasu.oracleaqclient.shutdownhook.ShutdownHook;
+import com.saptashibasu.poc.oracleaqclient.shutdownhook.ShutdownHook;
 
 public class ShutdownHookInitializer implements Initializer{
 	

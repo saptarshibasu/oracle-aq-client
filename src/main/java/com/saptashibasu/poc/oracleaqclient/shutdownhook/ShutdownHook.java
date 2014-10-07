@@ -1,4 +1,4 @@
-package com.saptashibasu.oracleaqclient.shutdownhook;
+package com.saptashibasu.poc.oracleaqclient.shutdownhook;
 
 import java.util.concurrent.BlockingQueue;
 
