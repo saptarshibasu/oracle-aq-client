@@ -2,12 +2,16 @@ package com.saptarshibasu.poc.oracleaqclient.jms;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import com.saptarshibasu.poc.oracleaqclient.initializer.Initializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class JMSClient implements Initializer{
+public class JMSSessionManager{
+	
+	private static final Logger LOG = LoggerFactory.getLogger(JMSSessionManager.class);
 	
 	private ConnectionFactory connectionFactory;
 	private MessageProcessor messageProcessor;
@@ -16,9 +20,13 @@ public class JMSClient implements Initializer{
 	private Integer concurrency;
 
 	private Connection connection;
+	public Connection getConnection() {
+		return connection;
+	}
+
 	private Session session;
 
-	public JMSClient(ConnectionFactory connectionFactory, MessageProcessor messageProcessor, String destination, String subscriptionName, Integer concurrency)
+	public JMSSessionManager(ConnectionFactory connectionFactory, MessageProcessor messageProcessor, String destination, String subscriptionName, Integer concurrency)
 	{
 		this.connectionFactory = connectionFactory;
 		this.messageProcessor = messageProcessor;
@@ -27,18 +35,7 @@ public class JMSClient implements Initializer{
 		this.concurrency = concurrency;
 	}
 	
-	public void refresh()
-	{
-		try {
-			connection.close();
-		} catch (JMSException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		init();
-	}
-
-	public void init()
+	public void initializeConnection()
 	{
 
 		try 
@@ -54,8 +51,26 @@ public class JMSClient implements Initializer{
 		} 
 		catch (JMSException e) 
 		{
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		
+	}
+	
+	public void closeConnection()
+	{
+		try {
+			connection.close();
+		} catch (JMSException e) {
+			LOG.error(e.getMessage(), e);
+		}
+	}
+	
+	public void setExceptionListener(ExceptionListener exceptionListener)
+	{
+		try {
+			connection.setExceptionListener(exceptionListener);
+		} catch (JMSException e) {
+			LOG.error(e.getMessage(), e);
+		}
 	}
 }

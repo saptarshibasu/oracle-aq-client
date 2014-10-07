@@ -13,12 +13,11 @@ import javax.management.ObjectName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.saptarshibasu.poc.oracleaqclient.monitoring.MessagingMBean;
 import com.saptarshibasu.poc.oracleaqclient.monitoring.Monitoring;
 
 public class MonitoringInitializer implements Initializer{
 	
-	private static final Logger LOG = LoggerFactory.getLogger(MessagingMBean.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MonitoringInitializer.class);
 	
 	private List<Monitoring> monitoringMBeans;
 	

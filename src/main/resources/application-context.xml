@@ -56,9 +56,11 @@
 		<constructor-arg>
 	        <list>
 	            <ref bean="monitoringInitializer" />
-	            <ref bean="jmsClient" />
+	            <ref bean="jmsInitializer" />
+	            <ref bean="shutdownHookInitializer" />
 	        </list>
     	</constructor-arg>
+    	<constructor-arg ref="blockingQueue"/>
 	</bean>
 	
 	<bean id="monitoringInitializer" class="com.saptarshibasu.poc.oracleaqclient.initializer.MonitoringInitializer">
@@ -68,11 +70,33 @@
 	        </list>
     	</constructor-arg>
 	</bean>
-	<bean id="jmsClient" class="com.saptarshibasu.poc.oracleaqclient.jms.JMSClient">
+	
+	<bean id="jmsInitializer" class="com.saptarshibasu.poc.oracleaqclient.initializer.JMSInitializer">
+		<constructor-arg ref="jmsSessionManager"/>
+		<constructor-arg ref="jmsExceptionListener"/>
+	</bean>
+	
+	<bean id="jmsExceptionListener" class="com.saptarshibasu.poc.oracleaqclient.jms.JMSExceptionListener">
+		<constructor-arg ref="jmsSessionManager"/>
+	</bean>
+	
+	<bean id="jmsSessionManager" class="com.saptarshibasu.poc.oracleaqclient.jms.JMSSessionManager">
 		<constructor-arg ref="aqConnectionFactory"/>
 		<constructor-arg ref="messageProcessor"/>
 		<constructor-arg value="${jms.client.destination}"/>
 		<constructor-arg value="${jms.client.subscriptionName}"/>
 		<constructor-arg value="${jms.client.concurrency}"/>
+	</bean>
+	
+	<bean id="blockingQueue" class="java.util.concurrent.LinkedBlockingQueue">
+	</bean>
+	
+	<bean id="shutdownHookInitializer" class="com.saptarshibasu.poc.oracleaqclient.initializer.ShutdownHookInitializer">
+		<constructor-arg ref="shutdownHook"/>
+	</bean>
+	
+	<bean id="shutdownHook" class="com.saptashibasu.oracleaqclient.shutdownhook.ShutdownHook">
+		<constructor-arg ref="jmsSessionManager"/>
+		<constructor-arg ref="blockingQueue"/>
 	</bean>
 </beans>
