@@ -50,8 +50,8 @@ public class MessageProcessor implements MessageListener {
 				msgText = msg.toString();
 			}
 
-			LOG.debug("Message Received: {}, {}", msgText, msg.getJMSRedelivered());
-
+			LOG.debug("Message Received: {}, {}, {}", msgText, msg.getJMSRedelivered(), msg.getJMSMessageID());
+			//throw new RuntimeException();
 		} catch (JMSException jmse) {
 			LOG.error("An exception occurred: {}", jmse.getMessage(), jmse);
 		}

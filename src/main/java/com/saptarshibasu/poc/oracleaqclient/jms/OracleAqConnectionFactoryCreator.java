@@ -1,6 +1,7 @@
 package com.saptarshibasu.poc.oracleaqclient.jms;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.QueueConnectionFactory;
 import javax.sql.DataSource;
 
 import oracle.jms.AQjmsFactory;
@@ -14,9 +15,9 @@ public class OracleAqConnectionFactoryCreator
         this.dataSource = dataSource;
     }
    
-    public ConnectionFactory getConnectionFactory() throws Exception 
+    public QueueConnectionFactory getQueueConnectionFactory() throws Exception 
     {
-         ConnectionFactory connectionFactory = AQjmsFactory.getConnectionFactory(dataSource);
+         QueueConnectionFactory connectionFactory = AQjmsFactory.getQueueConnectionFactory(dataSource);
         
          return connectionFactory;
     }

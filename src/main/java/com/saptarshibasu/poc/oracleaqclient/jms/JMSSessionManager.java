@@ -1,9 +1,10 @@
 package com.saptarshibasu.poc.oracleaqclient.jms;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.slf4j.Logger;
@@ -13,25 +14,23 @@ public class JMSSessionManager{
 	
 	private static final Logger LOG = LoggerFactory.getLogger(JMSSessionManager.class);
 	
-	private ConnectionFactory connectionFactory;
+	private QueueConnectionFactory queueConnectionFactory;
 	private MessageProcessor messageProcessor;
-	private String destination;
-	private String subscriptionName;
+	private String queueName;
 	private Integer concurrency;
 
-	private Connection connection;
-	public Connection getConnection() {
-		return connection;
+	private QueueConnection queueConnection;
+	public QueueConnection getConnection() {
+		return queueConnection;
 	}
 
-	private Session session;
+	private QueueSession queueSession;
 
-	public JMSSessionManager(ConnectionFactory connectionFactory, MessageProcessor messageProcessor, String destination, String subscriptionName, Integer concurrency)
+	public JMSSessionManager(QueueConnectionFactory queueConnectionFactory, MessageProcessor messageProcessor, String queueName, Integer concurrency)
 	{
-		this.connectionFactory = connectionFactory;
+		this.queueConnectionFactory = queueConnectionFactory;
 		this.messageProcessor = messageProcessor;
-		this.destination = destination;
-		this.subscriptionName = subscriptionName;
+		this.queueName = queueName;
 		this.concurrency = concurrency;
 	}
 	
@@ -40,14 +39,14 @@ public class JMSSessionManager{
 
 		try 
 		{
-			connection = connectionFactory.createConnection();
+			queueConnection = queueConnectionFactory.createQueueConnection();
 			for(int i=0; i<concurrency;i++)
 			{
-				session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-				session.createDurableSubscriber(session.createTopic(destination), subscriptionName);
-				session.setMessageListener(messageProcessor);
+				queueSession = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+				queueSession.createReceiver(queueSession.createQueue(queueName));
+				queueSession.setMessageListener(messageProcessor);
 			}
-			connection.start();
+			queueConnection.start();
 		} 
 		catch (JMSException e) 
 		{
@@ -59,7 +58,7 @@ public class JMSSessionManager{
 	public void closeConnection()
 	{
 		try {
-			connection.close();
+			queueConnection.close();
 		} catch (JMSException e) {
 			LOG.error(e.getMessage(), e);
 		}
@@ -68,7 +67,7 @@ public class JMSSessionManager{
 	public void setExceptionListener(ExceptionListener exceptionListener)
 	{
 		try {
-			connection.setExceptionListener(exceptionListener);
+			queueConnection.setExceptionListener(exceptionListener);
 		} catch (JMSException e) {
 			LOG.error(e.getMessage(), e);
 		}

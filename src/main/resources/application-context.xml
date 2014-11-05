@@ -44,7 +44,7 @@
 		<constructor-arg ref="oracleDataSource"/>
 	</bean>
 
-	<bean id="aqConnectionFactory" factory-bean="aqConnectionFactoryCreator" factory-method="getConnectionFactory"/>
+	<bean id="aqConnectionFactory" factory-bean="aqConnectionFactoryCreator" factory-method="getQueueConnectionFactory"/>
 
 	<bean id="messageProcessor" class="com.saptarshibasu.poc.oracleaqclient.jms.MessageProcessor"/>
 	
@@ -83,8 +83,7 @@
 	<bean id="jmsSessionManager" class="com.saptarshibasu.poc.oracleaqclient.jms.JMSSessionManager">
 		<constructor-arg ref="aqConnectionFactory"/>
 		<constructor-arg ref="messageProcessor"/>
-		<constructor-arg value="${jms.client.destination}"/>
-		<constructor-arg value="${jms.client.subscriptionName}"/>
+		<constructor-arg value="${jms.client.queueName}"/>
 		<constructor-arg value="${jms.client.concurrency}"/>
 	</bean>
 	
@@ -95,7 +94,7 @@
 		<constructor-arg ref="shutdownHook"/>
 	</bean>
 	
-	<bean id="shutdownHook" class="com.saptashibasu.oracleaqclient.shutdownhook.ShutdownHook">
+	<bean id="shutdownHook" class="com.saptarshibasu.poc.oracleaqclient.shutdownhook.ShutdownHook">
 		<constructor-arg ref="jmsSessionManager"/>
 		<constructor-arg ref="blockingQueue"/>
 	</bean>
