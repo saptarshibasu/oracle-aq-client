@@ -7,7 +7,6 @@ CREATE OR REPLACE PROCEDURE emp_dequeue_proc as
    pragma exception_init    (no_messages, -25228); 
 
 BEGIN
-   dequeue_options.consumer_name := 'GREEN';
    dequeue_options.wait := 1;
    DBMS_AQ.DEQUEUE(queue_name => 'poc.employee_queue',
            dequeue_options    => dequeue_options,
