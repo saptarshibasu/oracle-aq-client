@@ -1,7 +1,6 @@
 DECLARE
    subscriber sys.aq$_agent;
 
-   /* Add subscribers RED and GREEN to the suscriber list: */
 BEGIN
    dbms_aqadm.create_queue_table (Queue_table => 'poc.employee_qtab', Multiple_consumers => FALSE, Queue_payload_type => 'SYS.AQ$_JMS_TEXT_MESSAGE');
 
