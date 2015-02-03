@@ -17,6 +17,16 @@
         </property>
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
     </bean>
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="oracleDataSource"/>
+    </bean>
+      <!-- Create instance of transaction template for programmatic transaction manipulation -->
+    <bean id="txTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+       <property name="transactionManager" ref="transactionManager"/>
+    </bean>  
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="oracleDataSource"/>
+	</bean>
 
 	<bean id="oracleDataSource" class="oracle.jdbc.pool.OracleDataSource">
 		<property name="URL">
@@ -46,7 +56,10 @@
 
 	<bean id="aqConnectionFactory" factory-bean="aqConnectionFactoryCreator" factory-method="getQueueConnectionFactory"/>
 
-	<bean id="messageProcessor" class="com.saptarshibasu.poc.oracleaqclient.jms.MessageProcessor"/>
+	<bean id="messageProcessor" class="com.saptarshibasu.poc.oracleaqclient.jms.MessageProcessor">
+		<property name="jdbcTemplate" ref="jdbcTemplate"/>
+		<property name="transactionTemplate" ref="txTemplate"/>
+	</bean>
 	
 	<bean id="messagingMBean" class="com.saptarshibasu.poc.oracleaqclient.monitoring.MessagingMBean">
 		<constructor-arg ref="messageProcessor"/>

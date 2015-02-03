@@ -1,6 +1,9 @@
 package com.saptarshibasu.poc.oracleaqclient.jms;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -12,6 +15,11 @@ import org.perf4j.StopWatch;
 import org.perf4j.slf4j.Slf4JStopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class MessageProcessor implements MessageListener {
 	
@@ -21,7 +29,32 @@ public class MessageProcessor implements MessageListener {
 	
     private Map<String,Long> statistics = new HashMap<String, Long>();
     
-    public Map<String, Long> getStatistics() {
+	private JdbcTemplate jdbcTemplate; 
+	
+	private TransactionTemplate transactionTemplate;
+
+    
+    public JdbcTemplate getJdbcTemplate()
+	{
+		return jdbcTemplate;
+	}
+
+	public void setJdbcTemplate(JdbcTemplate jdbcTemplate)
+	{
+		this.jdbcTemplate = jdbcTemplate;
+	}
+
+	public TransactionTemplate getTransactionTemplate()
+	{
+		return transactionTemplate;
+	}
+
+	public void setTransactionTemplate(TransactionTemplate transactionTemplate)
+	{
+		this.transactionTemplate = transactionTemplate;
+	}
+
+	public Map<String, Long> getStatistics() {
 		return statistics;
 	}
 
@@ -41,6 +74,31 @@ public class MessageProcessor implements MessageListener {
 					statistics.put(messageType, statistics.get(messageType) + 1);
 				}
 			}
+			
+			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+				@Override
+				protected void doInTransactionWithoutResult(
+						TransactionStatus transactionStatus) {
+					try {
+						LOG.debug("Message Received");
+						List valueList = (List) jdbcTemplate.query("SELECT status from STATUS where status=? for update ", new Object[] { "abc" },
+								new RowMapper<Object>() {
+									@Override
+									public Object mapRow(ResultSet rs, int arg1)
+											throws SQLException {
+										return rs.getString(1);
+									}
+								});
+					}
+					catch(Exception e)
+					{
+						LOG.error("An exception occurred: {}", e.getMessage(), e);
+						transactionStatus.setRollbackOnly();
+						throw e;
+					}
+				}
+			});
+		
 			
 			String msgText;
 			if (msg instanceof TextMessage) {
